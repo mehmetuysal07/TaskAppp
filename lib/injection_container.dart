@@ -6,7 +6,9 @@ import 'features/todo/data/model/task_model.dart';
 import 'features/todo/data/repositories/task_repository_impl.dart';
 import 'features/todo/domain/repositories/task_repository.dart';
 import 'features/todo/domain/usecases/add_task.dart';
+import 'features/todo/domain/usecases/delete_task.dart';
 import 'features/todo/domain/usecases/get_tasks.dart';
+import 'features/todo/domain/usecases/update_task.dart';
 import 'features/todo/presentation/bloc/task_cubit.dart';
 // Henüz Cubit yazmadık ama yerini hazırlayalım (Yorum satırında)
 // import 'features/todo/presentation/bloc/task_cubit.dart';
@@ -21,7 +23,8 @@ Future<void> init() async {
   // Use Cases (Singleton)
   sl.registerLazySingleton(() => GetTasksUseCase(sl()));
   sl.registerLazySingleton(() => AddTaskUseCase(sl()));
-  // Diğer usecase'ler (DeleteTask, UpdateTask) buraya gelecek...
+  sl.registerLazySingleton(() => DeleteTaskUseCase(sl()));
+  sl.registerLazySingleton(() => UpdateTaskUseCase(sl()));
 
   // Repository (Singleton)
   sl.registerLazySingleton<TaskRepository>(
@@ -38,6 +41,8 @@ Future<void> init() async {
     () => TaskCubit(
       getTasksUseCase: sl(), // sl() otomatik olarak GetTasksUseCase'i bulur
       addTaskUseCase: sl(), // sl() otomatik olarak AddTaskUseCase'i bulur
+      deleteTaskUseCase: sl(),
+      updateTaskUseCase: sl(),
     ),
   );
   //! External (Dış Bağımlılıklar)

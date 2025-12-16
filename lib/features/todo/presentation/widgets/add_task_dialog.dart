@@ -5,7 +5,8 @@ import '../../domain/entities/task_status.dart';
 import '../bloc/task_cubit.dart';
 
 class AddTaskDialog extends StatefulWidget {
-  const AddTaskDialog({super.key});
+  final TaskEntity? task;
+  const AddTaskDialog({super.key, this.task});
 
   @override
   State<AddTaskDialog> createState() => _AddTaskDialogState();
@@ -18,6 +19,20 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
   final _resolutionController = TextEditingController(); // Yeni alan
   TaskStatus _selectedStatus = TaskStatus.pending; // Varsayılan durum
   final _formKey = GlobalKey<FormState>();
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.task != null) {
+      _titleController.text = widget.task!.title;
+      _descController.text = widget.task!.description;
+      _personelController.text = widget.task!.personel;
+      _selectedStatus = widget.task!.status;
+      if (widget.task!.resolutionDescription != null) {
+        _resolutionController.text = widget.task!.resolutionDescription!;
+      }
+    }
+  }
 
   @override
   void dispose() {
@@ -43,7 +58,7 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Text(
-                  'Yeni Görev',
+                  widget.task == null ? 'Yeni Görev' : 'Görevi Düzenle',
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.bold,
                     color: Theme.of(context).primaryColor,
@@ -126,10 +141,13 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
                     FilledButton(
                       onPressed: () {
                         if (_formKey.currentState!.validate()) {
-                          final id = DateTime.now().millisecondsSinceEpoch
-                              .toString();
+                          final isEditing = widget.task != null;
+                          final id = isEditing
+                              ? widget.task!.id
+                              : DateTime.now().millisecondsSinceEpoch
+                                    .toString();
 
-                          final newTask = TaskEntity(
+                          final updatedTask = TaskEntity(
                             id: id,
                             title: _titleController.text,
                             description: _descController.text,
@@ -139,14 +157,20 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
                                 _resolutionController.text.isNotEmpty
                                 ? _resolutionController.text
                                 : null,
-                            createdAt: DateTime.now(),
+                            createdAt: isEditing
+                                ? widget.task!.createdAt
+                                : DateTime.now(),
                           );
 
-                          context.read<TaskCubit>().addTask(newTask);
+                          if (isEditing) {
+                            context.read<TaskCubit>().updateTask(updatedTask);
+                          } else {
+                            context.read<TaskCubit>().addTask(updatedTask);
+                          }
                           Navigator.pop(context);
                         }
                       },
-                      child: const Text('Oluştur'),
+                      child: Text(widget.task == null ? 'Oluştur' : 'Güncelle'),
                     ),
                   ],
                 ),

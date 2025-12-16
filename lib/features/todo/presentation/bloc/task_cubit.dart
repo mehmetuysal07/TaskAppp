@@ -7,13 +7,21 @@ import 'task_state.dart';
 
 // İhtiyaca göre DeleteTask ve UpdateTask usecase'lerini de buraya import etmelisin
 
+import '../../domain/usecases/delete_task.dart';
+import '../../domain/usecases/update_task.dart';
+
 class TaskCubit extends Cubit<TaskState> {
   final GetTasksUseCase getTasksUseCase;
   final AddTaskUseCase addTaskUseCase;
-  // final DeleteTaskUseCase deleteTaskUseCase; // Eklediğinde burayı aç
+  final DeleteTaskUseCase deleteTaskUseCase;
+  final UpdateTaskUseCase updateTaskUseCase;
 
-  TaskCubit({required this.getTasksUseCase, required this.addTaskUseCase})
-    : super(TaskInitial());
+  TaskCubit({
+    required this.getTasksUseCase,
+    required this.addTaskUseCase,
+    required this.deleteTaskUseCase,
+    required this.updateTaskUseCase,
+  }) : super(TaskInitial());
 
   // Görevleri veritabanından getir
   Future<void> loadTasks() async {
@@ -26,6 +34,35 @@ class TaskCubit extends Cubit<TaskState> {
       (failure) => emit(TaskError(_mapFailureToMessage(failure))),
       (tasks) => emit(TaskLoaded(tasks)),
     );
+  }
+
+  // Görev sil
+  Future<void> deleteTask(String id) async {
+    // Silme işlemi sırasında loading gösterebiliriz
+    // emit(TaskLoading()); // İsteğe bağlı, ekran titremesin diye kapalı tutabiliriz
+
+    final result = await deleteTaskUseCase(id);
+
+    result.fold((failure) => emit(TaskError(_mapFailureToMessage(failure))), (
+      unit,
+    ) {
+      // Silme başarılı, listeyi yenile
+      loadTasks();
+    });
+  }
+
+  // Görev güncelle
+  Future<void> updateTask(TaskEntity task) async {
+    // emit(TaskLoading());
+
+    final result = await updateTaskUseCase(task);
+
+    result.fold((failure) => emit(TaskError(_mapFailureToMessage(failure))), (
+      unit,
+    ) {
+      // Güncelleme başarılı, listeyi yenile
+      loadTasks();
+    });
   }
 
   // Yeni görev ekle

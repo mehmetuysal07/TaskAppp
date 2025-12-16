@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../domain/entities/task_entity.dart';
 import '../../domain/entities/task_status.dart';
+import '../bloc/task_cubit.dart';
+import 'add_task_dialog.dart';
 
 class TaskItem extends StatelessWidget {
   final TaskEntity task;
@@ -179,6 +182,57 @@ class TaskItem extends StatelessWidget {
                     style: Theme.of(
                       context,
                     ).textTheme.labelSmall?.copyWith(color: Colors.grey),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.edit, color: Colors.blue),
+                    onPressed: () {
+                      showDialog(
+                        context: context,
+                        builder: (_) => BlocProvider.value(
+                          value: context.read<TaskCubit>(),
+                          child: AddTaskDialog(task: task),
+                        ),
+                      );
+                    },
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.delete, color: Colors.red),
+                    onPressed: () {
+                      showDialog(
+                        context: context,
+                        builder: (_) => BlocProvider.value(
+                          value: context.read<TaskCubit>(),
+                          child: AlertDialog(
+                            title: const Text('Görevi Sil'),
+                            content: const Text(
+                              'Bu görevi silmek istediğinize emin misiniz?',
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context),
+                                child: const Text('İptal'),
+                              ),
+                              TextButton(
+                                onPressed: () {
+                                  context.read<TaskCubit>().deleteTask(task.id);
+                                  Navigator.pop(context);
+                                },
+                                child: const Text(
+                                  'Sil',
+                                  style: TextStyle(color: Colors.red),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
                   ),
                 ],
               ),
