@@ -1,6 +1,7 @@
 import 'package:hive/hive.dart';
 import '../../domain/entities/task_entity.dart';
 import '../../domain/entities/task_status.dart';
+import '../../domain/entities/task_priority.dart';
 
 // Bu dosya otomatik oluşturulacak
 part 'task_model.g.dart';
@@ -21,6 +22,10 @@ class TaskModel extends HiveObject {
   final DateTime createdAt;
   @HiveField(6)
   final String? resolutionDescription; // Yeni alan
+  @HiveField(7, defaultValue: TaskPriority.medium)
+  final TaskPriority priority; // Yeni alan
+  @HiveField(8)
+  final DateTime? dueDate; // Yeni alan
 
   TaskModel({
     required this.id,
@@ -30,6 +35,8 @@ class TaskModel extends HiveObject {
     required this.status,
     required this.createdAt,
     this.resolutionDescription,
+    required this.priority,
+    this.dueDate,
   });
 
   // Entity'den Model'e çevirme
@@ -42,6 +49,8 @@ class TaskModel extends HiveObject {
       status: entity.status, // Direkt enum geçişi
       resolutionDescription: entity.resolutionDescription,
       createdAt: entity.createdAt,
+      priority: entity.priority,
+      dueDate: entity.dueDate,
     );
   }
 
@@ -55,6 +64,8 @@ class TaskModel extends HiveObject {
       status: status,
       resolutionDescription: resolutionDescription,
       createdAt: createdAt,
+      priority: priority,
+      dueDate: dueDate,
     );
   }
 }

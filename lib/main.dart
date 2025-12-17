@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'features/todo/data/model/task_model.dart'; // Corrected path
 import 'features/todo/domain/entities/task_status.dart';
+import 'features/todo/domain/entities/task_priority.dart';
 import 'features/todo/presentation/bloc/task_cubit.dart';
 import 'features/todo/presentation/pages/task_page.dart';
 import 'injection_container.dart' as di;
@@ -14,6 +15,7 @@ void main() async {
   // TaskModelAdapter is generated in task_model.g.dart, part of task_model.dart
   Hive.registerAdapter(TaskModelAdapter());
   Hive.registerAdapter(TaskStatusAdapter());
+  Hive.registerAdapter(TaskPriorityAdapter());
   await di.init();
 
   runApp(const MyApp());
