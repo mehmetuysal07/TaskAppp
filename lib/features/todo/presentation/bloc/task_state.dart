@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import '../../domain/entities/task_entity.dart';
+import '../../domain/entities/filter_criteria.dart';
 
 abstract class TaskState extends Equatable {
   const TaskState();
@@ -17,11 +18,17 @@ class TaskLoading extends TaskState {}
 // 3. Veriler geldi durumu (Ekranda listeyi gösterirken)
 class TaskLoaded extends TaskState {
   final List<TaskEntity> tasks;
+  final List<TaskEntity> filteredTasks;
+  final FilterCriteria filterCriteria;
 
-  const TaskLoaded(this.tasks);
+  const TaskLoaded(
+    this.tasks, {
+    this.filteredTasks = const [],
+    this.filterCriteria = const FilterCriteria(),
+  });
 
   @override
-  List<Object> get props => [tasks];
+  List<Object> get props => [tasks, filteredTasks, filterCriteria];
 }
 
 // 4. Hata durumu (Bir şeyler ters giderse)

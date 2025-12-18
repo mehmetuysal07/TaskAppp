@@ -9,6 +9,7 @@ import 'task_state.dart';
 
 import '../../domain/usecases/delete_task.dart';
 import '../../domain/usecases/update_task.dart';
+import '../../domain/entities/filter_criteria.dart';
 
 class TaskCubit extends Cubit<TaskState> {
   final GetTasksUseCase getTasksUseCase;
@@ -32,8 +33,63 @@ class TaskCubit extends Cubit<TaskState> {
 
     result.fold(
       (failure) => emit(TaskError(_mapFailureToMessage(failure))),
-      (tasks) => emit(TaskLoaded(tasks)),
+      (tasks) => emit(TaskLoaded(tasks, filteredTasks: tasks)),
     );
+  }
+
+  void applyFilter(FilterCriteria criteria) {
+    if (state is TaskLoaded) {
+      final currentState = state as TaskLoaded;
+      final allTasks = currentState.tasks;
+
+      if (criteria.isEmpty) {
+        emit(
+          TaskLoaded(
+            allTasks,
+            filteredTasks: allTasks,
+            filterCriteria: criteria,
+          ),
+        );
+        return;
+      }
+
+      final filtered = allTasks.where((task) {
+        bool matches = true;
+
+        // Text search
+        if (criteria.query.isNotEmpty) {
+          final query = criteria.query.toLowerCase();
+          matches =
+              matches &&
+              (task.title.toLowerCase().contains(query) ||
+                  task.description.toLowerCase().contains(query));
+        }
+
+        // Status filter
+        if (criteria.status != null) {
+          matches = matches && task.status == criteria.status;
+        }
+
+        // Priority filter
+        if (criteria.priority != null) {
+          matches = matches && task.priority == criteria.priority;
+        }
+
+        // Date range filter (Created At)
+        if (criteria.startDate != null) {
+          matches = matches && task.createdAt.isAfter(criteria.startDate!);
+        }
+        if (criteria.endDate != null) {
+          matches = matches && task.createdAt.isBefore(criteria.endDate!);
+        }
+
+        return matches;
+      }).toList();
+
+      emit(
+        TaskLoaded(allTasks, filteredTasks: filtered, filterCriteria: criteria),
+      );
+    }
   }
 
   // Görev sil

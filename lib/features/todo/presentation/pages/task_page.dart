@@ -4,6 +4,8 @@ import '../bloc/task_cubit.dart';
 import '../bloc/task_state.dart';
 import '../widgets/add_task_dialog.dart';
 import '../widgets/task_item.dart';
+import '../widgets/task_filter_sheet.dart';
+import 'statistics_page.dart';
 
 class TaskPage extends StatelessWidget {
   const TaskPage({super.key});
@@ -17,8 +19,38 @@ class TaskPage extends StatelessWidget {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: () => context.read<TaskCubit>().loadTasks(),
+            icon: const Icon(Icons.bar_chart),
+            tooltip: 'İstatistikler',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => BlocProvider.value(
+                    value: context.read<TaskCubit>(),
+                    child: const StatisticsPage(),
+                  ),
+                ),
+              );
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.filter_list),
+            tooltip: 'Filtrele',
+            onPressed: () {
+              final state = context.read<TaskCubit>().state;
+              if (state is TaskLoaded) {
+                showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  builder: (ctx) => BlocProvider.value(
+                    value: context.read<TaskCubit>(),
+                    child: TaskFilterSheet(
+                      initialCriteria: state.filterCriteria,
+                    ),
+                  ),
+                );
+              }
+            },
           ),
         ],
       ),
@@ -54,13 +86,20 @@ class TaskPage extends StatelessWidget {
                   ],
                 ),
               );
+            } else if (state.filteredTasks.isEmpty) {
+              return const Center(
+                child: Text(
+                  "Aradığınız kriterlere uygun görev bulunamadı.",
+                  style: TextStyle(color: Colors.grey),
+                ),
+              );
             }
             // Listeyi gösteriyoruz
             return ListView.builder(
               padding: const EdgeInsets.all(16),
-              itemCount: state.tasks.length,
+              itemCount: state.filteredTasks.length,
               itemBuilder: (context, index) {
-                final task = state.tasks[index];
+                final task = state.filteredTasks[index];
                 return TaskItem(task: task);
               },
             );
